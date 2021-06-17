@@ -31,6 +31,7 @@ def separa_sentencas(texto):
     sentencas = re.split(r'[.!?]+', texto)
     if sentencas[-1] == '':
         del sentencas[-1]
+        
     return sentencas
 
 def separa_frases(sentenca):
@@ -70,13 +71,15 @@ def n_palavras_diferentes(lista_palavras):
     return len(freq)
 
 #Calcular Tamanho Médio de Palvras
-def format_palavras(texto):
+def formatar_palavras(texto):
+    frases=[]
+    palavras=[]
     sentencas = separa_sentencas(texto)
     for sentenca in sentencas:
-        frases = separa_frases(sentenca)
+        frases.extend(separa_frases(sentenca))
 
     for frase in frases:
-        palavras = separa_palavras(frase)
+        palavras.extend(separa_palavras(frase))
 
     return palavras
 
@@ -86,49 +89,139 @@ def somar_tamanho_palavras(lstPalavras):
         tamanhoPalavra = tamanhoPalavra + len(palavra)
 
     return tamanhoPalavra
-
+def quantidade_caracteres_sentenca(lista):
+    n_caractere = 0
+    for item in lista:
+        n_caractere +=len(item)
     
+#    print("Caracter sentenca ", n_caractere)
+    return n_caractere
+def quantidade_caracteres_frase(lista):
+    n_caracteres = 0
+    x=""
+    for itens in lista:
+        for item in itens:
+            n_caracteres += len(item)
+            
+    return n_caracteres
+def quantidade_frases_texto(lista):
+    n_frases = 0
+    for itens in lista:
+        for i in range(len(itens)):
+            n_frases += + 1
+    return n_frases
+        
+def quantidade_frases(sentencas):
+    n_frases=0
+    for sentenca in sentencas:
+        n_frases += len(separa_frases(sentenca.strip()))
+        
+#    print("quantidade_frases", n_frases)
+    return n_frases
+
+def listar_frases(sentencas):
+    frases = []
+    for sentenca in sentencas:
+        frases.append(sentenca)
+    
+    return frases
+        
 def compara_assinatura(as_a, as_b):
     '''IMPLEMENTAR. Essa funcao recebe duas assinaturas de texto e deve devolver o grau de similaridade nas assinaturas.'''
-    pass
-
+    dif = 0
+    for i in range (len(as_a)):
+        dif = dif + abs(as_a[i] - as_b[i])
+    
+        i=i+1
+        
+    return dif/6
+    
 def calcula_assinatura(texto):
     '''IMPLEMENTAR. Essa funcao recebe um texto e deve devolver a assinatura do texto.'''
-    lst_palavras = format_palavras(texto)
+    
+#    x=0
+#    y=""
+#    for palavras in lst_p:
+#        for p in palavras:
+#            y += p
+#            x += len(p) 
+    
+#    print("x=> ",y)
+#    print("Sentenças: ", len(lst_s))
+#    print("Frases: ", len(lst_f))
+#    print("Palavras: ", x)
+#    print("resultado: ", x /n_frase)
+    
+    
+    
+    lst_palavras = formatar_palavras(texto)
     tamanho_palavra = somar_tamanho_palavras(lst_palavras)
     total_palavras_diferente = n_palavras_diferentes(lst_palavras)
     total_palavras_unicas = n_palavras_unicas(lst_palavras)
     
     #TAMANHO MEDIO DE PALAVRAS
     wal_calculado = tamanho_palavra / len(lst_palavras)
-    print("wal_calculado: ",wal_calculado)
+    #print("wal_calculado: ",wal_calculado)
     
     #TYPE TOKEN
     ttr_calculado = total_palavras_diferente / len(lst_palavras)
-    print("ttr_calculado: ",ttr_calculado)
+    #print("ttr_calculado: ",ttr_calculado)
     
     #HAPAX LEGOMANA
     hlr_calculado = total_palavras_unicas / len(lst_palavras)
-    print("hlr_calculado: ",hlr_calculado)
+    #print("hlr_calculado: ",hlr_calculado)
+    
+    #REALIZAÇÃO SEPARAÇÃO DAS SENTENÇAS
+    lst_sentencas = separa_sentencas(texto)
+    lst_frases = []
+    
+    for s in lst_sentencas:
+        lst_frases.append(separa_frases(s))
+    
+    lst_p = []
+    for frases in lst_frases:
+        for f in frases:
+            lst_p.append(separa_palavras(f))
+
     
     #TAMANHO MÉDIO SENTENÇA
-    sal_calculado = 0
-    #COMPLEXIDADE MÉDIA SENTENÇA
-    sac_calculado = 0
-    #TAMANHO MÉDIO FRASE
-    pal_calculado = 0
+    sal_calculado = quantidade_caracteres_sentenca(lst_sentencas)/len(lst_sentencas)
+#    print("sal_calculado: ", sal_calculado)
     
+    #COMPLEXIDADE MÉDIA SENTENÇA
+    sac_calculado = quantidade_frases(lst_sentencas) / len(lst_sentencas)
+#    print("sac_calculado: ",sac_calculado)
+    
+    #TAMANHO MÉDIO FRASE
+    pal_calculado = quantidade_caracteres_frase(lst_frases)/quantidade_frases_texto(lst_frases)
+#    print("pal_calculado: {0:.4f}".format(pal_calculado))
+
     return [wal_calculado, ttr_calculado, hlr_calculado, sal_calculado, sac_calculado, pal_calculado]
     
 def avalia_textos(textos, ass_cp):
     '''IMPLEMENTAR. Essa funcao recebe uma lista de textos e uma assinatura ass_cp e deve devolver o numero (1 a n) do texto com maior probabilidade de ter sido infectado por COH-PIAH.'''
-    pass
+    lst_infectados=[]
+    for texto in textos:
+        ass_txt = calcula_assinatura(texto)
+        lst_infectados.append(compara_assinatura(ass_cp, ass_txt))
+    
+    n_infect = lst_infectados.index(min(lst_infectados))
 
+    return n_infect+1
 
 def main():
-    texto="O rato roeu a roupa do rei de roma!"
+#    txt1 = "Num fabulário ainda por encontrar será um dia lida esta fábula: A uma bordadora dum país longínquo foi encomendado pela sua rainha que bordasse, sobre seda ou cetim, entre folhas, uma rosa branca. A bordadora, como era muito jovem, foi procurar por toda a parte aquela rosa branca perfeitíssima, em cuja semelhança bordasse a sua. Mas sucedia que umas rosas eram menos belas do que lhe convinha, e que outras não eram brancas como deviam ser. Gastou dias sobre dias, chorosas horas, buscando a rosa que imitasse com seda, e, como nos países longínquos nunca deixa de haver pena de morte, ela sabia bem que, pelas leis dos contos como este, não podiam deixar de a matar se ela não bordasse a rosa branca. Por fim, não tendo melhor remédio, bordou de memória a rosa que lhe haviam exigido. Depois de a bordar foi compará-la com as rosas brancas que existem realmente nas roseiras. Sucedeu que todas as rosas brancas se pareciam exactamente com a rosa que ela bordara, que cada uma delas era exactamente aquela. Ela levou o trabalho ao palácio e é de supor que casasse com o príncipe. No fabulário, onde vem, esta fábula não traz moralidade. Mesmo porque, na idade de ouro, as fábulas não tinham moralidade nenhuma."
+#    txt2 = "Voltei-me para ela; Capitu tinha os olhos no chão. Ergueu-os logo, devagar, e ficamos a olhar um para o outro... Confissão de crianças, tu valias bem duas ou três páginas, mas quero ser poupado. Em verdade, não falamos nada; o muro falou por nós. Não nos movemos, as mãos é que se estenderam pouco a pouco, todas quatro, pegando-se, apertando-se, fundindo-se. Não marquei a hora exata daquele gesto. Devia tê-la marcado; sinto a falta de uma nota escrita naquela mesma noite, e que eu poria aqui com os erros de ortografia que trouxesse, mas não traria nenhum, tal era a diferença entre o estudante e o adolescente. Conhecia as regras do escrever, sem suspeitar as do amar; tinha orgias de latim e era virgem de mulheres."
+#    txt3 = "Senão quando, estando eu ocupado em preparar e apurar a minha invenção, recebi em cheio um golpe de ar; adoeci logo, e não me tratei. Tinha o emplasto no cérebro; trazia comigo a idéia fixa dos doidos e dos fortes. Via-me, ao longe, ascender do chão das turbas, e remontar ao Céu, como uma águia imortal, e não é diante de tão excelso espetáculo que um homem pode sentir a dor que o punge. No outro dia estava pior; tratei-me enfim, mas incompletamente, sem método, nem cuidado, nem persistência; tal foi a origem do mal que me trouxe à eternidade. Sabem já que morri numa sexta-feira, dia aziago, e creio haver provado que foi a minha invenção que me matou. Há demonstrações menos lúcidas e não menos triunfantes. Não era impossível, entretanto, que eu chegasse a galgar o cimo de um século, e a figurar nas folhas públicas, entre macróbios. Tinha saúde e robustez. Suponha-se que, em vez de estar lançando os alicerces de uma invenção farmacêutica, tratava de coligir os elementos de uma instituição política, ou de uma reforma religiosa. Vinha a corrente de ar, que vence em eficácia o cálculo humano, e lá se ia tudo. Assim corre a sorte d7os homens."    
+    
+#    textos = [txt1,txt2,txt3]
+#    ass_cp = [4.51,0.693,0.55,70.82,1.82,38.5]
+    textos = le_textos()
+    ass_cp = le_assinatura()
+ 
+    infectado = avalia_textos(textos, ass_cp)
+    
+    print(f"O autor do texto {infectado} está infectado com COH-PIAH")
     
     
-    calcula_assinatura(texto)
-
 main()
